@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'; import { ReactNode } from 'react'
 import { useAuth } from './lib/auth'; import AppShell, { NAV } from './components/AppShell'
-import Landing from './pages/Landing'; import Auth from './pages/Auth'; import Onboarding from './pages/Onboarding'
+import Dashboard from './pages/Dashboard'; import Landing from './pages/Landing'; import Auth from './pages/Auth'; import Onboarding from './pages/Onboarding'
 function Guard({children,needOnboarded}:{children:ReactNode;needOnboarded?:boolean}){const {session,profile,loading}=useAuth()
  if(loading) return <p className="p-8" role="status">Loading…</p>
  if(!session) return <Navigate to="/auth" replace/>
@@ -12,5 +12,5 @@ export default function App(){return <Routes>
  <Route path="/onboarding" element={<Guard><Onboarding/></Guard>}/>
  <Route path="/app" element={<Guard needOnboarded><AppShell/></Guard>}>
   <Route index element={<Navigate to="dashboard" replace/>}/>
-  {NAV.map(([to,l])=><Route key={to} path={to} element={<Soon title={l}/>}/>)}</Route>
+  <Route path="dashboard" element={<Dashboard/>}/>{NAV.filter(([t])=>t!=='dashboard').map(([to,l])=><Route key={to} path={to} element={<Soon title={l}/>}/>)}</Route>
  <Route path="*" element={<Navigate to="/" replace/>}/></Routes>}
