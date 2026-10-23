@@ -131,38 +131,40 @@ Deno.serve(async (req) => {
     await admin
       .from("ai_usage")
       .upsert({ user_id: user.id, day, calls: (u?.calls ?? 0) + 1 });
-    
-    const model = Deno.env.get("AI_MODEL") ?? "gemini-3.8-flash";
+
+    const model = Deno.env.get("AI_MODEL") ?? "gemini-3.5-flash-lite";
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+    const payload = (gen: Record<string, unknown>) =>
+      JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: msgs.map((m) => ({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [{ text: m.content }],
+        })),
+        generationConfig: gen,
+      });
     const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), 30000);
+    const timer = setTimeout(() => ctl.abort(), 55000);
+    const call = (gen: Record<string, unknown>) =>
+      fetch(endpoint, {
+        method: "POST",
+        signal: ctl.signal,
+        headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
+        body: payload(gen),
+      });
 
     let r: Response;
-
     try {
-      r = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-        {
-          method: "POST",
-          signal: ctl.signal,
-          headers: {
-            "x-goog-api-key": key,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: system }],
-            },
-            contents: msgs.map((m) => ({
-              role: m.role === "assistant" ? "model" : "user",
-              parts: [{ text: m.content }],
-            })),
-            generationConfig: {
-              maxOutputTokens: 1024,
-              temperature: 0.7,
-            },
-          }),
-        },
-      );
+      // Low thinking = much faster replies
+      r = await call({
+        maxOutputTokens: 2048,
+        temperature: 0.7,
+        thinkingConfig: { thinkingLevel: "low" },
+      });
+      if (r.status === 400) {
+        console.error("Retrying without thinkingConfig:", await r.text());
+        r = await call({ maxOutputTokens: 2048, temperature: 0.7 });
+      }
     } catch (e) {
       return json(
         {
@@ -180,18 +182,18 @@ Deno.serve(async (req) => {
 
     if (!r.ok) {
       console.error("Gemini upstream", r.status, await r.text());
-      return json(
-        {
-          error: "The AI service returned an error. Please retry.",
-          code: "upstream",
-        },
-        502,
-      );
+      const msg =
+        r.status === 429
+          ? "Your Gemini key hit its rate or quota limit. Wait a minute and retry."
+          : [401, 403, 404].includes(r.status)
+            ? "The Gemini key or model name was rejected. Check GEMINI_API_KEY and AI_MODEL."
+            : "The AI service returned an error. Please retry.";
+      return json({ error: msg, code: "upstream" }, 502);
     }
 
     const data = await r.json();
     const reply = (data.candidates?.[0]?.content?.parts ?? [])
-      .filter((p: any) => typeof p.text === "string")
+      .filter((p: any) => typeof p.text === "string" && !p.thought)
       .map((p: any) => p.text)
       .join("\n")
       .trim();
@@ -207,7 +209,6 @@ Deno.serve(async (req) => {
     }
 
     return json({ reply });
-
   } catch (e) {
     console.error(e);
     return json({ error: "Unexpected server error.", code: "server" }, 500);
