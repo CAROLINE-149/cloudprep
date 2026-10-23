@@ -1,0 +1,22 @@
+# Testing checklist
+Run after setup (all 5 SQL files, `ai-chat` deployed if testing AI). Use two different accounts for the security checks.
+- [ ] Sign up, confirm email (if enabled), sign in, sign out, and "Forgot password" (reset link opens Settings).
+- [ ] Onboarding saves exam date, daily minutes, study days and topic confidence; dashboard greets you by name.
+- [ ] Study Plan: generate with an exam date 3+ weeks away; sessions appear in Calendar (month, week, day).
+- [ ] Try a very close exam date or 1 study day: a warning appears and no impossible schedule is created.
+- [ ] Mark a session complete: dashboard time, streak and daily-goal ring update.
+- [ ] Edit, reschedule and delete a session; add a custom weekly event.
+- [ ] Notes: create, autosave (see "All changes saved"), pin, search, upload a .txt, reject a .pdf and a 2 MB file.
+- [ ] Note > Create flashcard (select text first) creates a linked card; "Explain with AI" opens the Study Buddy.
+- [ ] Flashcards: study, rate Know / Almost / Need practice; missed cards return sooner; deck progress updates.
+- [ ] Quiz: learning mode shows feedback and explanations; test mode hides them until the end; saved/missed filters work.
+- [ ] Practice test: timer counts down, pause/resume, flag, submit confirmation, results by topic and difficulty, history saved.
+- [ ] Progress: charts and numbers match what you did; readiness shows "not enough data" until the stated minimums are met.
+- [ ] Take a quiz and miss questions in one topic; Dashboard weak topics update and a regenerated plan gives that topic more time.
+- [ ] Study Buddy and Tutor answer (with key set); with the key removed they show a clear "not configured" message.
+- [ ] Visual studio: all 5 visuals, step-by-step mode, save to notes. Video library: open a module, add a YouTube link, reject another site.
+- [ ] Arcade: play all five games; points and badges persist after reload.
+- [ ] Settings: save profile, change password, download data.
+- [ ] Security: signed in as user B, user A's notes/plans/attempts are not visible (RLS). The AI key never appears in browser dev tools.
+- [ ] Mobile (narrow window): drawer menu, bottom navigation, calendar scrolls sideways, forms usable. Tab through a page: focus is visible.
+- [ ] `npm run build` succeeds.

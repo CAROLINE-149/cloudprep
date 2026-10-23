@@ -1,155 +1,56 @@
-# CloudPrep AI
+# CloudPrep
 
-**Your AI-powered companion for Microsoft Azure Fundamentals (AZ-900) exam preparation.**
+An independent, unofficial AZ-900 study aid: study plan and calendar, notes, flashcards (spaced repetition), quizzes and timed practice tests with original questions, progress and readiness, AI Study Buddy and Tutor, visual explainers, resource library and a learning arcade.
 
-## About the Project
+> CloudPrep is an independent, unofficial AZ-900 study aid. It is not affiliated with or endorsed by Microsoft. Azure and AZ-900 are referenced for educational identification purposes. Practice questions are original learning materials and are not actual Microsoft exam questions.
 
-CloudPrep AI is an AI-powered learning platform designed to help learners prepare for the Microsoft Azure Fundamentals (AZ-900) certification exam. It aims to make studying easier, more interactive, and more personalized through AI-assisted learning tools, practice questions, study planning, and progress tracking.
+## Stack
 
-The platform brings learning resources together in one place, helping learners understand cloud computing concepts, revise important topics, and build confidence before taking the exam.
+React + TypeScript (Vite), Tailwind, Lucide, Recharts, React Router. Supabase (Postgres, Auth, Edge Functions) with row-level security on all private tables. AI runs only in the `ai-chat` Edge Function.
 
-**Note:** CloudPrep AI is an independent educational project. It is not affiliated with or endorsed by Microsoft.
+## Structure
 
-## Objectives
+`src/pages` (one file per feature), `src/components` (shell, chat, footer), `src/lib` (supabase client, auth, planner, SM-2 scheduler, readiness), `supabase/migrations` (SQL), `supabase/functions/ai-chat` (AI gateway).
 
-- Make AZ-900 exam preparation more accessible and engaging.
-- Help learners understand Azure and cloud computing concepts.
-- Provide personalized study support through AI-powered tools.
-- Allow learners to practice questions and assess their readiness.
-- Help users organize their studies and track their learning progress.
+## Setup
 
-## Key Features
+1. `npm install`
+2. Create a Supabase project. In the SQL editor run, in order, each once: `001_core_schema.sql`, `002_seed_topics.sql`, `003_seed_flashcards.sql`, `004_seed_questions.sql`, `005_resources_games.sql`.
+3. Copy `.env.example` to `.env` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (Project Settings > API).
+4. In Supabase > Authentication > URL Configuration, set your site URL (and your dev URL) so confirmation and reset links work.
+5. `npm run dev`
 
-- **AI Study Assistant:** Get help understanding cloud computing and Azure concepts.
-- **Personalized Study Plan:** Organize study sessions around your learning goals.
-- **Study Notes:** Create and manage notes for revision.
-- **Study Calendar:** Plan and organize learning activities.
-- **Practice Quizzes:** Test your knowledge with AZ-900-related questions.
-- **Flashcards:** Revise important terms, definitions, and concepts.
-- **Practice Tests:** Simulate exam-style practice sessions.
-- **Visual Learning:** Support understanding through visual explanations.
-- **Progress Tracking:** Monitor learning activity and quiz performance.
-- **AI Tutor:** Receive guided explanations and assistance with difficult topics.
+## AI setup (optional; the rest works without it)
 
-*Feature availability may vary as development progresses.*
+`supabase login`, `supabase link --project-ref YOUR_REF`, `supabase secrets set AI_API_KEY=...` (optional `AI_MODEL`, `AI_DAILY_LIMIT`), then `supabase functions deploy ai-chat`.
 
-## Technologies Used
+## Environment variables
 
-- **Frontend:** React, TypeScript, Vite
-- **Database:** PostgreSQL
-- **Backend and Authentication:** Supabase
-- **Styling:** CSS and the styling tools configured in the project
-- **Development Tools:** Visual Studio Code, Git, and GitHub
+| Name                                      | Where                               | Purpose                                       |
+| ----------------------------------------- | ----------------------------------- | --------------------------------------------- |
+| VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY | `.env` / hosting secrets            | Public client config                          |
+| AI_API_KEY                                | Supabase function secret only       | AI provider key. Never prefix with VITE\_     |
+| AI_MODEL, AI_DAILY_LIMIT                  | Supabase function secret (optional) | Model name; per-user daily calls (default 60) |
 
-## Getting Started
+## Deploy
 
-### Prerequisites
+**Replit:** import the project, add the two `VITE_` values in Secrets, run `npm install`, then set the run command to `npm run dev` (or build with `npm run build` and serve with `npm run preview`). Add the Replit URL to Supabase Auth URL settings.
+**Static hosts (Vercel/Netlify/Cloudflare Pages):** build command `npm run build`, output `dist`, add the two env vars, and add a rewrite of all routes to `/index.html`.
 
-Ensure you have the following installed:
+## Limitations
 
-- Node.js
-- npm
-- Git
-- A Supabase account
+- The question bank is small (28 questions) and should be extended. No matching-type questions in quizzes.
+- No AI generation of quizzes, flashcards or diagrams from notes; no PDF text extraction (.txt and .md only).
+- Notes are plain text. Reminders are stored but do not send notifications. No notification centre.
+- Calendar items are not linked to specific notes or quizzes. No account deletion button.
+- Readiness weights are this app's own design, not an official method.
+- Video library has no pre-loaded third-party videos: official Microsoft Learn modules are listed and learners add their own YouTube links.
+- Source files were type-checked, but end-to-end behaviour should be verified with `TESTING.md`.
 
-### Installation
+## Needs external configuration
 
-1. Clone the repository:
+Supabase project and keys, the five SQL scripts, Auth URL settings, an AI provider key plus Edge Function deployment, and (optionally) your own email provider for production sign-up emails.
 
-   ```bash
-   git clone <your-github-repository-url>
-   ```
+## Updating exam content
 
-2. Navigate to the project directory:
-
-   ```bash
-   cd <your-project-folder>
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-4. Create a `.env` file in the project root and configure your Supabase credentials:
-
-   ```env
-   VITE_SUPABASE_URL=your_supabase_project_url
-   VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
-   ```
-
-   Replace the placeholder values with your project's actual Supabase URL and publishable key.
-
-5. Configure the database by running the SQL migration in `supabase/migrations/001_core_schema.sql` using the Supabase SQL Editor, if this migration has not already been applied.
-
-6. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-7. Open the local URL displayed in your terminal to access the application.
-
-##Environment Variables
-
-The project uses environment variables to configure the Supabase connection.
-
-| Variable | Purpose |
-|---|---|
-| `VITE_SUPABASE_URL` | Identifies the Supabase project |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Allows the frontend to connect using the project's publishable key |
-
-**Security:** Never commit your `.env` file or expose a Supabase secret or `service_role` key in frontend code. Use appropriate Row Level Security (RLS) policies to protect database records.
-
-##Project Structure
-
-```text
-cloudprep/
-├── src/
-│   ├── lib/
-│   │   ├── auth.tsx
-│   │   └── supabase.ts
-│   └── ...
-├── supabase/
-│   └── migrations/
-│       └── 001_core_schema.sql
-├── .env.example
-├── .gitignore
-├── package.json
-└── README.md
-```
-
-*This is an illustrative structure. Update it to reflect the actual files and folders in your repository.*
-
-## Testing
-
-Testing will cover the main user flows, including:
-
-- Application startup and navigation.
-- Supabase connectivity.
-- Authentication, if enabled.
-- Saving and retrieving study data.
-- Generating and completing practice quizzes.
-- Recording and displaying learning progress.
-
-## 🔮 Future Improvements
-
-- Add more personalized AI-generated study recommendations.
-- Expand the question bank across the AZ-900 exam domains.
-- Introduce interactive cloud learning games.
-- Add visual explanations and short educational videos.
-- Improve progress analytics and exam-readiness insights.
-- Optimize the experience for mobile devices.
-
-## Contributing
-
-Contributions, suggestions, and bug reports are welcome. Fork the repository, create a feature branch, make your changes, and submit a pull request.
-
-##License
-
-Choose and add an appropriate open-source license before distributing the project. Until a license is added, reuse and redistribution permissions are not automatically granted.
-
----
-
-**Built to make cloud learning simpler, smarter, and more engaging.**
+When Microsoft revises the study guide, edit and re-run `002_seed_topics.sql` (it updates in place) and refresh the weightings and the "last verified" date.

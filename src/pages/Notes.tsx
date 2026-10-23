@@ -1,5 +1,5 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Pin, Plus, Trash2, Upload, ArrowLeft, Sparkles } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../lib/auth";
@@ -20,7 +20,9 @@ export default function Notes() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [topics, setTopics] = useState<{ id: string; title: string }[]>([]);
   const [sel, setSel] = useState<string | null>(null);
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState<string>(
+    (useLocation().state as { q?: string } | null)?.q ?? "",
+  );
   const [tf, setTf] = useState("");
   const [err, setErr] = useState("");
   const [save, setSave] = useState<"saved" | "saving" | "error">("saved");

@@ -66,7 +66,7 @@ export default function AppShell() {
       <aside className="hidden w-64 shrink-0 flex-col bg-navy-900 p-4 text-slate-100 lg:flex">
         <span className="mb-6 flex items-center gap-2 text-lg font-bold">
           <Cloud className="text-electric" />
-          CloudPrep
+          CloudPrep AI
         </span>
         {menu}
       </aside>
@@ -98,12 +98,16 @@ export default function AppShell() {
             <Menu />
           </button>
           <input
-            aria-label="Search"
+            aria-label="Search notes"
             type="search"
-            placeholder="Search notes, topics, questions…"
+            placeholder="Search your notes (press Enter)…"
             className="input max-w-md"
-            disabled
-            title="Global search arrives with the notes feature"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const v = (e.target as HTMLInputElement).value.trim();
+                if (v) nav("/app/notes", { state: { q: v } });
+              }
+            }}
           />
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
