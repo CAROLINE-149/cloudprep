@@ -66,7 +66,7 @@ export default function AppShell() {
       <aside className="hidden w-64 shrink-0 flex-col bg-navy-900 p-4 text-slate-100 lg:flex">
         <span className="mb-6 flex items-center gap-2 text-lg font-bold">
           <Cloud className="text-electric" />
-          CloudPrep AI
+          CloudPrep
         </span>
         {menu}
       </aside>
